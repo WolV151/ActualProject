@@ -1,4 +1,7 @@
 # Project (25%) - Module Recording System
+# Script by Marin Donchev
+# SID: R00192936
+# Group: COMP1B-Y
 
 import mod
 
@@ -57,7 +60,7 @@ def module_menu(option_flag, module_codes, module_names):
     return module_codes[user_number - 1]  # returns the module code specified by the user
 
 
-def module_select(module_code):
+def module_select(module_code):  # returns info about students in a module in 4 lists
     student_name = []
     days_present = []
     days_absent = []
@@ -75,12 +78,51 @@ def module_select(module_code):
     return student_name, days_present, days_absent, days_excused
 
 
+def update_attendance(module_code, student_name, days_present, days_absent, days_excused):  # updates the list based
+    print(f"{module_code} - {len(student_name)} students\n"                                 # on user select
+          f"=============================================")
+
+    for i, x in enumerate(student_name):
+        print(student_name[i])
+
+        while True:
+            student_option = mod.read_nonnegative_integer("Select an option:\n"
+                                                          "1: Present\n"
+                                                          "2: Absent\n"
+                                                          "3: Excused\n"
+                                                          "=====> ")
+
+            if student_option == 1:  # update the list based on the 3 options and give an error otherwise
+                days_present[i] += 1
+                break
+            elif student_option == 2:
+                days_absent[i] += 1
+                break
+            elif student_option == 3:
+                days_excused[i] += 1
+                break
+            else:
+                print("Please select a valid option.")
+
+    return days_present, days_absent, days_excused
+
+
+def record_updates_file(module_file, student_name, days_present, days_absent, days_excused):
+    with open(f"{module_file}_a.txt", "w") as writefile:
+        for i, x in enumerate(student_name):
+            print(f"{student_name[i]},{days_present[i]},{days_absent[i]},{days_excused[i]}", file=writefile)
+
+
 def main():
     user_choice, option_flag = main_menu()
     module_codes, module_names = list_modules()
     selected_module = module_menu(option_flag, module_codes, module_names)
+    student_name, days_present, days_absent, days_excused = module_select(selected_module)  # non updated lists to feed into update funciton
+    days_present_updated, days_absent_updated, days_excused_updated = update_attendance(selected_module, student_name,
+                                                                                        days_present, days_absent,
+                                                                                        days_excused)  # updated
 
-    print(module_select(selected_module))
+    record_updates_file(selected_module, student_name, days_present_updated, days_absent_updated, days_excused_updated) # record to file
 
 
 main()
