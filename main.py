@@ -6,6 +6,33 @@
 import mod
 
 
+def login_check(login_file):
+    user_input_username = mod.read_string("Username: ")
+    user_input_password = mod.read_string("Password: ")
+    usernames = []
+    passwords = []
+    with open(f"{login_file}.txt", "r") as readfile:
+        while True:
+            line = readfile.readline().rstrip()
+            if line == "":
+                break
+            usernames.append(line)
+            line = readfile.readline().rstrip()
+            if line == "":
+                break
+            passwords.append(line)
+
+    for i, x in enumerate(usernames):  # if they match - continue, if not then try again
+        while True:
+            if user_input_username == usernames[i] and user_input_password == passwords[i]:
+                print("Welcome", usernames[i], "\n")
+                break
+            else:
+                print(mod.bcolors.FAIL + "Login Failed!" + mod.bcolors.ENDC)
+                user_input_username = mod.read_string("Username: ")
+                user_input_password = mod.read_string("Password: ")
+
+
 def main_menu():
     while True:
         user_number = mod.read_nonnegative_integer("Module Record System - Main Menu\n"
@@ -187,18 +214,20 @@ def stat_calculator(module_code, student_name, days_present, days_absent, days_e
 
 
 def main():
-    while True:
+    login_check("login_details")
+    while True:  # show the main menu until the user chooses EXIT
         user_choice, option_flag = main_menu()
         module_codes, module_names = list_modules()
         selected_module = module_menu(option_flag, module_codes, module_names)
-        student_name, days_present, days_absent, days_excused = module_select(selected_module)  # non updated lists to feed
-        # into update function
+        student_name, days_present, days_absent, days_excused = module_select(selected_module)  # non updated lists
+        # to feed into update function
 
         # option 1 - update attendance
         if user_choice == 1:
             days_present_updated, days_absent_updated, days_excused_updated = update_attendance(selected_module,
                                                                                                 student_name,
-                                                                                                days_present, days_absent,
+                                                                                                days_present,
+                                                                                                days_absent,
                                                                                                 days_excused)  # updated
 
             record_updates_file(selected_module, student_name, days_present_updated, days_absent_updated,
