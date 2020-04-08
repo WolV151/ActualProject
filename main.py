@@ -79,7 +79,7 @@ def module_select(module_code):  # returns info about students in a module in 4 
 
 
 def update_attendance(module_code, student_name, days_present, days_absent, days_excused):  # updates the list based
-    print(f"{module_code} - {len(student_name)} students\n"                                 # on user select
+    print(f"{module_code} - {len(student_name)} students\n"  # on user select
           f"=============================================")
 
     for i, x in enumerate(student_name):
@@ -107,22 +107,106 @@ def update_attendance(module_code, student_name, days_present, days_absent, days
     return days_present, days_absent, days_excused
 
 
-def record_updates_file(module_file, student_name, days_present, days_absent, days_excused):
-    with open(f"{module_file}_a.txt", "w") as writefile:
+def record_updates_file(module_file, student_name, days_present, days_absent, days_excused):  # save to a file function
+    with open(f"{module_file}.txt", "w") as writefile:
         for i, x in enumerate(student_name):
-            print(f"{student_name[i]},{days_present[i]},{days_absent[i]},{days_excused[i]}", file=writefile)
+            print(f"{student_name[i]}, {days_present[i]}, {days_absent[i]}, {days_excused[i]}", file=writefile)
+
+
+def stat_calculator(module_code, student_name, days_present, days_absent, days_excused):
+    non_attenders = ""  # accumulators
+    low_attenders = ""
+    best_attenders = ""
+    best_attendance_number = 0
+    average_sum = 0
+
+    filename = module_code + "_" + mod.return_date()  # file to write to
+
+    total_students = len(student_name)  # total number of students
+    total_classes = days_present[0] + days_absent[0] + days_excused[0]  # get number of classes by summing all days
+
+    for i, x in enumerate(student_name):
+        average_student_attendance = (days_present[i] / total_classes) * 10  # average attendance days per student
+        average_sum = average_sum + average_student_attendance  # sum the average attendance per student
+
+        if days_present[i] == max(days_present):
+            best_attenders = best_attenders + "\n" + student_name[i]
+            best_attendance_number = days_present[i]
+
+        if days_present[i] == 0:
+            non_attenders = non_attenders + "\n" + student_name[i]
+
+        if (average_student_attendance * 10) < 70 and days_present[i] != 0:
+            low_attenders = low_attenders + "\n" + student_name[i]
+
+    average_overall = average_sum // total_students  # overall average attendance
+
+    if non_attenders == "":  # so it does not stay empty
+        non_attenders = "None"
+
+    if low_attenders == "":
+        low_attenders = "None"
+
+    print(f"Module: {module_code}\n"
+          f"Number of Students: {total_students}\n"
+          f"Number of Classes: {total_classes}\n"
+          f"Average Attendance: {average_overall} days\n"
+          f"\nLow Attender(s) - Under 70%:{low_attenders}\n"
+          f"\nNon Attender(s): {non_attenders}\n"
+          f"\nBest Attender(s): {best_attenders}\n"
+          f"- with an attendance of {best_attendance_number}/{total_classes} days")
+
+    try:  # write to a file
+        with open(f"{filename}.txt", "x") as writefile:
+            print(f"Module: {module_code}\n"
+                  f"Number of Students: {total_students}\n"
+                  f"Number of Classes: {total_classes}\n"
+                  f"Average Attendance: {average_overall}\n"
+                  f"\nLow Attender(s) - Under 70%:{low_attenders}\n"
+                  f"\nNon Attender(s): {non_attenders}\n"
+                  f"\nBest Attender(s): {best_attenders}\n"
+                  f"- with an attendance of {best_attendance_number}/{total_classes} days", file=writefile)
+    except FileExistsError:
+        overwrite = mod.yes_no(
+            mod.bcolors.WARNING + "Warning: A file with today's statistics already exist. Overwrite?: "
+            + mod.bcolors.ENDC)
+
+        if overwrite:  # if it exists overwrite it or not
+            with open(f"{filename}.txt", "w") as writefile:
+                print(f"Module: {module_code}\n"
+                      f"Number of Students: {total_students}\n"
+                      f"Number of Classes: {total_classes}\n"
+                      f"Average Attendance: {average_overall}\n"
+                      f"\nLow Attender(s) - Under 70%:{low_attenders}\n"
+                      f"\nNon Attender(s): {non_attenders}\n"
+                      f"\nBest Attender(s): {best_attenders}\n"
+                      f"- with an attendance of {best_attendance_number}/{total_classes} days", file=writefile)
+            print(mod.bcolors.OKBLUE + f"File {filename}.txt overwritten." + mod.bcolors.ENDC)
+        else:
+            print(mod.bcolors.OKBLUE + f"File {filename}.txt not overwritten." + mod.bcolors.ENDC)
 
 
 def main():
-    user_choice, option_flag = main_menu()
-    module_codes, module_names = list_modules()
-    selected_module = module_menu(option_flag, module_codes, module_names)
-    student_name, days_present, days_absent, days_excused = module_select(selected_module)  # non updated lists to feed into update funciton
-    days_present_updated, days_absent_updated, days_excused_updated = update_attendance(selected_module, student_name,
-                                                                                        days_present, days_absent,
-                                                                                        days_excused)  # updated
+    while True:
+        user_choice, option_flag = main_menu()
+        module_codes, module_names = list_modules()
+        selected_module = module_menu(option_flag, module_codes, module_names)
+        student_name, days_present, days_absent, days_excused = module_select(selected_module)  # non updated lists to feed
+        # into update function
 
-    record_updates_file(selected_module, student_name, days_present_updated, days_absent_updated, days_excused_updated) # record to file
+        # option 1 - update attendance
+        if user_choice == 1:
+            days_present_updated, days_absent_updated, days_excused_updated = update_attendance(selected_module,
+                                                                                                student_name,
+                                                                                                days_present, days_absent,
+                                                                                                days_excused)  # updated
+
+            record_updates_file(selected_module, student_name, days_present_updated, days_absent_updated,
+                                days_excused_updated)  # record to file
+
+        # option 2 - generate stats
+        elif user_choice == 2:
+            stat_calculator(selected_module, student_name, days_present, days_absent, days_excused)
 
 
 main()
