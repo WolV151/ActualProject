@@ -7,10 +7,9 @@ import mod
 
 
 def login_check(login_file):
-    user_input_username = mod.read_string("Username: ")
-    user_input_password = mod.read_string("Password: ")
     usernames = []
     passwords = []
+    check_passed = False
     with open(f"{login_file}.txt", "r") as readfile:
         while True:
             line = readfile.readline().rstrip()
@@ -22,15 +21,17 @@ def login_check(login_file):
                 break
             passwords.append(line)
 
-    for i, x in enumerate(usernames):  # if they match - continue, if not then try again
-        while True:
-            if user_input_username == usernames[i] and user_input_password == passwords[i]:
-                print("Welcome", usernames[i], "\n")
-                break
-            else:
-                print(mod.bcolors.FAIL + "Login Failed!" + mod.bcolors.ENDC)
-                user_input_username = mod.read_string("Username: ")
-                user_input_password = mod.read_string("Password: ")
+    while not check_passed:  # if the check is not passed then repeat until passed
+        user_input_username = mod.read_string("Username: ")
+        user_input_password = mod.read_string("Password: ")
+
+        for i in range(len(usernames)):
+            if usernames[i] == user_input_username and passwords[i] == user_input_password:
+                print(f"\nWelcome {usernames[i]}!\n")
+                check_passed = True
+
+        if not check_passed:
+            print(mod.bcolors.FAIL + "Login failed" + mod.bcolors.ENDC)
 
 
 def main_menu():
