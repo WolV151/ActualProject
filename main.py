@@ -94,16 +94,20 @@ def module_select(module_code):  # returns info about students in a module in 4 
     days_absent = []
     days_excused = []
 
-    with open(f"{module_code}.txt", "r") as readfile:
-        for read_pointer in readfile:
-            split_text = read_pointer.split(",")
+    try:
+        with open(f"{module_code}.txt", "r") as readfile:
+            for read_pointer in readfile:
+                split_text = read_pointer.split(",")
 
-            student_name.append(split_text[0])
-            days_present.append(int(split_text[1]))
-            days_absent.append(int(split_text[2]))
-            days_excused.append(int(split_text[3]))
+                student_name.append(split_text[0])
+                days_present.append(int(split_text[1]))
+                days_absent.append(int(split_text[2]))
+                days_excused.append(int(split_text[3]))
 
-    return student_name, days_present, days_absent, days_excused
+        return student_name, days_present, days_absent, days_excused
+
+    except FileNotFoundError:
+        exit(mod.bcolors.FAIL + f"Error: Data for module {module_code} not found!" + mod.bcolors.ENDC)
 
 
 def update_attendance(module_code, student_name, days_present, days_absent, days_excused):  # updates the list based
